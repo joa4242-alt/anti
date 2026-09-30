@@ -1,0 +1,142 @@
+.validation-banner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+/* 상태별 배경 및 테두리 색상 */
+.validation-banner.info {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1.5px solid rgba(99, 102, 241, 0.3);
+}
+
+.validation-banner.warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+}
+
+.validation-banner.success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1.5px solid rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.banner-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.banner-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.banner-message {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.validation-banner.warning .banner-message {
+  color: #fbbf24;
+}
+
+.validation-banner.success .banner-message {
+  color: #34d399;
+}
+
+.banner-submessage {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* 추첨 시작 버튼 */
+.draw-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 0.85rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  transition: all 0.2s ease;
+  outline: none;
+  border: none;
+}
+
+.draw-button.disabled {
+  background: #334155;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.draw-button.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.draw-button.active:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 0 25px rgba(236, 72, 153, 0.6);
+}
+
+.draw-button.active:active {
+  transform: scale(0.98);
+}
+
+.draw-btn-icon {
+  font-size: 1.3rem;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(236, 72, 153, 0.6);
+  }
+}
+
+@media (max-width: 480px) {
+  .validation-banner {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .banner-icon {
+    font-size: 1.4rem;
+  }
+
+  .banner-message {
+    font-size: 0.95rem;
+  }
+
+  .draw-button {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+}

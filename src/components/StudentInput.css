@@ -1,0 +1,169 @@
+.student-input-container {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.student-input-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.title-area {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.section-icon {
+  font-size: 1.2rem;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.student-count-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.count-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.count-value {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.student-input-guide {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0 0 0.6rem 0;
+}
+
+.textarea-wrapper {
+  width: 100%;
+}
+
+.student-textarea {
+  width: 100%;
+  background: #0f172a;
+  border: 1.5px solid #334155;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 110px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.student-textarea:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.student-textarea::placeholder {
+  color: #475569;
+}
+
+.duplicate-warning {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+}
+
+.student-action-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.btn-sample-fill {
+  flex: 2;
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  padding: 0.5rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-sample-fill:hover {
+  background: rgba(99, 102, 241, 0.35);
+  color: #ffffff;
+  border-color: #818cf8;
+}
+
+.btn-text-clear {
+  flex: 1;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.5rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-text-clear:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ffffff;
+  border-color: #f87171;
+}
+
+.btn-text-clear:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .student-input-container {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .section-title {
+    font-size: 0.95rem;
+  }
+
+  .student-count-badge {
+    padding: 0.2rem 0.5rem;
+  }
+
+  .count-value {
+    font-size: 0.85rem;
+  }
+}

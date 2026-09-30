@@ -1,0 +1,309 @@
+/* 버스 전체 컨테이너 */
+.bus-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1rem 0.5rem;
+}
+
+/* 상단 방향 안내 뱃지 */
+.bus-header-banner {
+  margin-bottom: 0.75rem;
+}
+
+.bus-direction-badge {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* 버스 차체 외형 */
+.bus-frame {
+  width: 100%;
+  background: #0f172a;
+  border: 3px solid #334155;
+  border-radius: 2.5rem 2.5rem 1.25rem 1.25rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  padding: 1.25rem 1rem;
+  box-sizing: border-box;
+}
+
+/* 버스 전면부 (운전석, 유리가림막, 출입문) */
+.bus-front-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 1.5rem 1.5rem 0.75rem 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.driver-seat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(79, 70, 229, 0.2);
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  color: #c7d2fe;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.driver-icon {
+  font-size: 1.1rem;
+}
+
+.windshield-area {
+  flex: 1;
+  text-align: center;
+}
+
+.windshield-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.door-area {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #a7f3d0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.door-icon {
+  font-size: 1.1rem;
+}
+
+/* 버스 내부 조망 */
+.bus-interior {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 열 헤더 (창가/복도/통로) */
+.bus-column-header {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed #334155;
+}
+
+.aisle-header-text {
+  color: #475569;
+}
+
+/* 그리드 및 행 설정 */
+.bus-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bus-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+}
+
+/* 중앙 통로 셀 */
+.bus-aisle-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 48px;
+  background: rgba(30, 41, 59, 0.4);
+  border-left: 1px dashed rgba(71, 85, 105, 0.4);
+  border-right: 1px dashed rgba(71, 85, 105, 0.4);
+  border-radius: 4px;
+}
+
+.aisle-label {
+  font-size: 0.7rem;
+  color: #475569;
+  writing-mode: vertical-lr;
+  letter-spacing: 0.2em;
+}
+
+.bus-empty-cell {
+  height: 48px;
+}
+
+/* 좌석 카드 기본 버튼 디자인 */
+.bus-seat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1.5px solid #334155;
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.2rem;
+  min-height: 48px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.15s ease;
+  user-select: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.bus-seat-card:hover {
+  transform: translateY(-2px);
+  border-color: #64748b;
+}
+
+.bus-seat-card:active {
+  transform: scale(0.95);
+}
+
+/* 좌석 선택(Selected) 상태 */
+.bus-seat-card.selected {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.bus-seat-card.selected:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 16px rgba(125, 211, 252, 0.5);
+}
+
+/* 좌석 헤드레스트 디테일 */
+.seat-headrest {
+  position: absolute;
+  top: -4px;
+  width: 55%;
+  height: 6px;
+  background: #475569;
+  border-radius: 3px 3px 0 0;
+  transition: background 0.15s ease;
+}
+
+.bus-seat-card.selected .seat-headrest {
+  background: #38bdf8;
+}
+
+/* 선택 체크 뱃지 */
+.seat-check-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  background: #38bdf8;
+  color: #0f172a;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  animation: badgePop 0.15s ease-out;
+}
+
+@keyframes badgePop {
+  0% { transform: scale(0); }
+  80% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.seat-number {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #94a3b8;
+  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  transition: color 0.15s ease;
+}
+
+.bus-seat-card.selected .seat-number {
+  color: #ffffff;
+}
+
+.seat-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.bus-seat-card.selected .seat-label {
+  color: #bae6fd;
+}
+
+/* 버스 후면부 */
+.bus-rear-area {
+  margin-top: 1rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-top: 2px dashed #334155;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.rear-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 모바일 반응형 처리 */
+@media (max-width: 480px) {
+  .bus-container {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .bus-frame {
+    padding: 0.75rem 0.4rem;
+    border-radius: 1.75rem 1.75rem 1rem 1rem;
+  }
+
+  .driver-seat, .door-area {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .bus-row {
+    gap: 0.25rem;
+  }
+
+  .bus-seat-card {
+    min-height: 44px;
+    padding: 0.3rem 0.1rem;
+  }
+
+  .seat-number {
+    font-size: 0.95rem;
+  }
+}
