@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { BUS_TEMPLATES } from './data/busTemplates';
 import { BusLayout } from './components/BusLayout';
 import { StudentInput } from './components/StudentInput';
@@ -7,6 +7,14 @@ import { Confetti } from './components/Confetti';
 import { ResultList } from './components/ResultList';
 import { PrintSheet } from './components/PrintSheet';
 import { BusEditor } from './components/BusEditor';
+import { WorkManager } from './components/WorkManager';
+import {
+  loadWorks,
+  newWorkId,
+  persistWorks,
+  upsertWork,
+  type SavedWork,
+} from './data/savedWorks';
 import { isValidTemplate } from './data/customBus';
 import { STORAGE_KEYS, loadJSON, saveJSON } from './utils/storage';
 import { downloadResultImage } from './utils/exportImage';
@@ -17,17 +25,67 @@ import { createDrawSession, removeSeats, reshuffleSeats } from './utils/drawEngi
 import type { BusTemplate, DrawSession } from './types/bus';
 import './App.css';
 
+interface WorkState {
+  workId: string;
+  title: string;
+  templateId: string;
+  rawStudentText: string;
+  selectedSeatIds: string[];
+  drawSession: DrawSession | null;
+}
+
+/**
+ * 저장된 작업을 화면 상태로 바꿉니다. 없으면 빈 새 작업.
+ * 작업이 쓰던 버스가 삭제됐으면 45인승으로 바꾸고 결과는 비웁니다.
+ */
+const resolveWorkState = (work: SavedWork | null, templates: BusTemplate[]): WorkState => {
+  const template = templates.find((t) => t.id === work?.templateId);
+  if (!work || !template) {
+    return {
+      workId: work?.id ?? newWorkId(),
+      title: work?.title ?? '',
+      templateId: BUS_TEMPLATES[0].id,
+      rawStudentText: work?.rawStudentText ?? '',
+      selectedSeatIds: BUS_TEMPLATES[0].seats.map((s) => s.id),
+      drawSession: null,
+    };
+  }
+  const seatIds = new Set(template.seats.map((s) => s.id));
+  const sessionFits =
+    work.drawSession?.assignments.every((a) => seatIds.has(a.seatId)) ?? false;
+  return {
+    workId: work.id,
+    title: work.title,
+    templateId: template.id,
+    rawStudentText: work.rawStudentText,
+    selectedSeatIds: work.selectedSeatIds.filter((id) => seatIds.has(id)),
+    drawSession: sessionFits ? work.drawSession : null,
+  };
+};
+
 function App() {
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('bus-45');
-  const [rawStudentText, setRawStudentText] = useState<string>('');
+  // 처음 열 때: 저장된 버스와 작업을 읽고, 가장 최근 작업을 이어서 연다 (PRD 14장)
+  const [initial] = useState(() => {
+    const buses = loadJSON<unknown[]>(STORAGE_KEYS.customBuses, []).filter(isValidTemplate);
+    const works = loadWorks();
+    return {
+      buses,
+      works,
+      state: resolveWorkState(works[0] ?? null, [...BUS_TEMPLATES, ...buses]),
+    };
+  });
+
+  const [workId, setWorkId] = useState(initial.state.workId);
+  const [workTitle, setWorkTitle] = useState(initial.state.title);
+  const [savedWorks, setSavedWorks] = useState<SavedWork[]>(initial.works);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(initial.state.templateId);
+  const [rawStudentText, setRawStudentText] = useState<string>(initial.state.rawStudentText);
   // 추첨 결과. 입력(버스/명단)이 바뀌면 무효화합니다.
-  const [drawSession, setDrawSession] = useState<DrawSession | null>(null);
+  const [drawSession, setDrawSession] = useState<DrawSession | null>(initial.state.drawSession);
   // 결과 보기 방식: 버스형 / 목록형 (PRD 10장)
   const [resultView, setResultView] = useState<'bus' | 'list'>('bus');
   // 사용자가 만든 버스 (이 기기에 저장)
-  const [customBuses, setCustomBuses] = useState<BusTemplate[]>(() =>
-    loadJSON<unknown[]>(STORAGE_KEYS.customBuses, []).filter(isValidTemplate)
-  );
+  const [customBuses, setCustomBuses] = useState<BusTemplate[]>(initial.buses);
   const [isEditingBus, setIsEditingBus] = useState(false);
   const allTemplates = useMemo(() => [...BUS_TEMPLATES, ...customBuses], [customBuses]);
 
@@ -65,10 +123,75 @@ function App() {
     [rawStudentText]
   );
 
-  // 초기 상태: 현재 버스 템플릿의 전체 좌석 ID 선택
-  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>(() =>
-    currentTemplate.seats.map((s) => s.id)
+  const [selectedSeatIds, setSelectedSeatIds] = useState<string[]>(
+    initial.state.selectedSeatIds
   );
+
+  // 자동 저장: 내용이 있는 작업만, 추첨 연출 중에는 끝난 뒤에 저장
+  // (화면의 작업 목록은 지금 작업을 빼고 보여 주므로 여기서 갱신할 필요가 없다)
+  useEffect(() => {
+    if (isDrawing) return;
+    if (!workTitle.trim() && !rawStudentText.trim() && !drawSession) return;
+    const work: SavedWork = {
+      id: workId,
+      title: workTitle.trim(),
+      updatedAt: new Date().toISOString(),
+      templateId: selectedTemplateId,
+      templateName: currentTemplate.name,
+      rawStudentText,
+      studentCount: parsedStudents.length,
+      selectedSeatIds,
+      drawSession,
+    };
+    // 저장소가 기준: 목록 화면은 작업을 바꿀 때 저장소에서 다시 읽는다
+    persistWorks(upsertWork(loadWorks(), work));
+  }, [
+    isDrawing,
+    workId,
+    workTitle,
+    selectedTemplateId,
+    currentTemplate.name,
+    rawStudentText,
+    parsedStudents.length,
+    selectedSeatIds,
+    drawSession,
+  ]);
+
+  // 작업 상태를 화면에 적용 (불러오기 / 새 작업)
+  const applyWorkState = (state: WorkState) => {
+    drawAnimation.cancel();
+    setWorkId(state.workId);
+    setWorkTitle(state.title);
+    setSelectedTemplateId(state.templateId);
+    setRawStudentText(state.rawStudentText);
+    setSelectedSeatIds(state.selectedSeatIds);
+    setDrawSession(state.drawSession);
+    setResultView('bus');
+    setIsEditingBus(false);
+    setSavedWorks(loadWorks());
+  };
+
+  const handleNewWork = () => applyWorkState(resolveWorkState(null, allTemplates));
+
+  const handleLoadWork = (id: string) => {
+    const work = savedWorks.find((w) => w.id === id);
+    if (work) applyWorkState(resolveWorkState(work, allTemplates));
+  };
+
+  const handleDeleteWork = (id: string) => {
+    const work = savedWorks.find((w) => w.id === id);
+    if (!work || !window.confirm(`'${work.title || '이름 없는 작업'}' 작업을 삭제할까요?`)) return;
+    const next = loadWorks().filter((w) => w.id !== id);
+    setSavedWorks(next);
+    persistWorks(next);
+  };
+
+  // 개인정보 보호: 저장된 작업 기록 전체 삭제 (PRD 13장)
+  const handleClearAllWorks = () => {
+    if (!window.confirm('저장된 작업을 모두 지울까요?\n지금 화면도 새 작업으로 바뀌어요.')) return;
+    persistWorks([]);
+    handleNewWork();
+  };
 
   // 좌석 ID → 학생 이름 (결과 표시용)
   const resultNames = useMemo(() => {
@@ -230,16 +353,12 @@ function App() {
     setDrawSession(null);
   };
 
-  // 처음으로: 명단·좌석·결과를 모두 초기 상태로
+  // 처음으로: 지금 작업은 저장해 두고 새 작업을 시작
   const handleGoHome = () => {
-    if (!window.confirm('학생 명단과 추첨 결과가 모두 지워집니다. 처음으로 돌아갈까요?')) {
+    if (!window.confirm('처음 화면으로 갈까요?\n지금 작업은 "저장된 작업"에 남아 있어요.')) {
       return;
     }
-    drawAnimation.cancel();
-    setDrawSession(null);
-    setResultView('bus');
-    setRawStudentText('');
-    selectTemplate(BUS_TEMPLATES[0]);
+    handleNewWork();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -276,6 +395,18 @@ function App() {
       </header>
 
       <main className="app-main">
+        <WorkManager
+          works={savedWorks}
+          currentWorkId={workId}
+          title={workTitle}
+          onTitleChange={setWorkTitle}
+          onLoad={handleLoadWork}
+          onDelete={handleDeleteWork}
+          onNew={handleNewWork}
+          onClearAll={handleClearAllWorks}
+          disabled={isDrawing}
+        />
+
         {/* 버스 템플릿 선택 탭 */}
         <section className="bus-selector-section">
           <label className="selector-label">버스 종류 선택</label>

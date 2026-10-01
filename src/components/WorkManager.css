@@ -1,0 +1,132 @@
+.work-manager {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.work-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.work-title-label {
+  flex: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.work-title-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.work-new-btn {
+  flex: none;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.work-autosave-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.work-list {
+  margin-top: 0.6rem;
+}
+
+.work-list summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a5b4fc;
+}
+
+.work-list ul {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.work-item {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.work-load-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.6rem;
+  border: 1px solid #334155;
+  background: rgba(15, 23, 42, 0.6);
+  color: #f1f5f9;
+  text-align: left;
+  cursor: pointer;
+}
+
+.work-load-btn:hover {
+  border-color: #38bdf8;
+}
+
+.work-item-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.work-item-meta {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.work-delete-btn {
+  flex: none;
+  width: 2.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: transparent;
+  cursor: pointer;
+}
+
+.work-clear-all-btn {
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: transparent;
+  color: #f87171;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.work-manager button:disabled,
+.work-manager input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
