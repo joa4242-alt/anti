@@ -30,6 +30,7 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /anti/
+          VITE_SITE_URL: https://joa4242-alt.github.io/anti
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

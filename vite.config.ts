@@ -37,6 +37,8 @@ export default defineConfig({
       workbox: {
         // 엑셀 라이브러리 조각까지 미리 저장해 두어 오프라인에서도 불러오기 가능
         globPatterns: ['**/*.{js,css,html,svg,png}'],
+        // 링크 미리보기 그림은 앱 사용에 필요 없으므로 오프라인 저장에서 제외
+        globIgnores: ['og-image.png'],
       },
     }),
   ],
