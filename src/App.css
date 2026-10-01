@@ -293,3 +293,18 @@
   font-weight: 700;
   color: #fbbf24;
 }
+
+.result-area {
+  width: 100%;
+}
+
+.home-btn {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.home-btn:hover {
+  background: rgba(148, 163, 184, 0.22);
+  border-color: #cbd5e1;
+}

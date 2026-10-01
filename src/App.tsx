@@ -4,6 +4,7 @@ import { BusLayout } from './components/BusLayout';
 import { StudentInput } from './components/StudentInput';
 import { ValidationBanner } from './components/ValidationBanner';
 import { Confetti } from './components/Confetti';
+import { ResultList } from './components/ResultList';
 import { useDrawAnimation } from './hooks/useDrawAnimation';
 import { playFanfare, playTick, unlockAudio } from './utils/sound';
 import { parseStudentList } from './utils/studentSanitizer';
@@ -16,6 +17,8 @@ function App() {
   const [rawStudentText, setRawStudentText] = useState<string>('');
   // 추첨 결과. 입력(버스/명단)이 바뀌면 무효화합니다.
   const [drawSession, setDrawSession] = useState<DrawSession | null>(null);
+  // 결과 보기 방식: 버스형 / 목록형 (PRD 10장)
+  const [resultView, setResultView] = useState<'bus' | 'list'>('bus');
 
   // 사운드 ON/OFF (연출 도중 토글도 즉시 반영되도록 ref로도 보관)
   const [soundOn, setSoundOn] = useState<boolean>(() => {
@@ -138,6 +141,21 @@ function App() {
     setDrawSession(null);
   };
 
+  // 처음으로: 명단·좌석·결과를 모두 초기 상태로
+  const handleGoHome = () => {
+    if (!window.confirm('학생 명단과 추첨 결과가 모두 지워집니다. 처음으로 돌아갈까요?')) {
+      return;
+    }
+    drawAnimation.cancel();
+    setDrawSession(null);
+    setResultView('bus');
+    setRawStudentText('');
+    handleTemplateChange(BUS_TEMPLATES[0].id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const showResultList = drawSession !== null && !isDrawing && resultView === 'list';
+
   return (
     <div className="app-container">
       <header className="app-header">
@@ -218,6 +236,26 @@ function App() {
               🎉 학생 {drawSession.assignments.length}명의 자리 배정이 완료되었습니다.
               <Confetti key={drawSession.id} />
             </span>
+            <div className="result-view-tabs" role="tablist" aria-label="결과 보기 방식">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={resultView === 'bus'}
+                className={`result-view-tab ${resultView === 'bus' ? 'active' : ''}`}
+                onClick={() => setResultView('bus')}
+              >
+                🚌 버스형
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={resultView === 'list'}
+                className={`result-view-tab ${resultView === 'list' ? 'active' : ''}`}
+                onClick={() => setResultView('list')}
+              >
+                📋 목록형
+              </button>
+            </div>
             <div className="control-button-group">
               <button
                 type="button"
@@ -231,7 +269,14 @@ function App() {
                 className="ctrl-btn deselect-all-btn"
                 onClick={handleResetDraw}
               >
-                ✏️ 좌석 다시 선택
+                ✏️ 좌석 수정
+              </button>
+              <button
+                type="button"
+                className="ctrl-btn home-btn"
+                onClick={handleGoHome}
+              >
+                🏠 처음으로
               </button>
             </div>
           </section>
@@ -270,19 +315,23 @@ function App() {
         )}
 
         {/* 좌석 배치 및 인터랙션 레이아웃 */}
-        <div ref={busAreaRef}>
-          <BusLayout
-            template={currentTemplate}
-            selectedSeatIds={selectedSeatIds}
-            onToggleSeat={handleToggleSeat}
-            assignedNames={assignedNames}
-            isSpinning={isDrawing}
-          />
+        <div ref={busAreaRef} className="result-area">
+          {showResultList ? (
+            <ResultList template={currentTemplate} session={drawSession} />
+          ) : (
+            <BusLayout
+              template={currentTemplate}
+              selectedSeatIds={selectedSeatIds}
+              onToggleSeat={handleToggleSeat}
+              assignedNames={assignedNames}
+              isSpinning={isDrawing}
+            />
+          )}
         </div>
       </main>
 
       <footer className="app-footer">
-        <p>체험학습 버스자리 PWA - 추첨 연출 완료</p>
+        <p>체험학습 버스자리 PWA - 결과 화면 완료</p>
       </footer>
     </div>
   );

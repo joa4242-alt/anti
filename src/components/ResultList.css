@@ -1,0 +1,114 @@
+.result-list-container {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.result-list-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.result-list-title {
+  flex: 1;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.result-list-count {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #34d399;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+}
+
+.result-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.result-list-table th {
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 2px solid #334155;
+}
+
+.result-list-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  color: #e2e8f0;
+}
+
+.result-list-table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.result-list-table .col-seat {
+  width: 5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.result-list-table .col-name {
+  font-weight: 700;
+}
+
+.result-list-table .col-position {
+  width: 5rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* 결과 보기 방식 전환 탭 (버스형 / 목록형) */
+.result-view-tabs {
+  display: flex;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.25rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 0.75rem;
+  box-sizing: border-box;
+}
+
+.result-view-tab {
+  flex: 1;
+  padding: 0.45rem 0.5rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.result-view-tab.active {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .result-list-container {
+    padding: 0.85rem 0.75rem;
+  }
+
+  .result-list-table {
+    font-size: 0.9rem;
+  }
+}
