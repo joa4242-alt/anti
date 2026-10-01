@@ -1,32 +1,61 @@
-# React + TypeScript + Vite
+# 🚌 체험학습 버스자리
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+초등학교 선생님이 체험학습 버스 좌석을 **빠르고 공정하게** 랜덤 배정하는 웹앱(PWA)입니다.
 
-Currently, two official plugins are available:
+**버스 선택 → 학생 명단 입력 → 좌석 선택 → 🎰 5초 추첨 → 🎉 결과 공개 → 저장/인쇄**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 주요 기능
 
-## React Compiler
+| 기능 | 설명 |
+|---|---|
+| 버스 3종 + 내 버스 | 45인승·28인승·25인승 기본 제공, 실제 계약한 버스 배치를 직접 만들어 저장 |
+| 학생 명단 | 직접 입력, 복사·붙여넣기, **엑셀(.xlsx)·CSV 불러오기**, 동명이인 구분 |
+| 좌석 선택 | 사용할 좌석만 눌러서 선택. 학생 수와 좌석 수가 같아야 추첨 가능 |
+| 추첨 | 균등 무작위 1:1 배정 → 5초 슬롯머신 연출, 효과음(🔊/🔇), 축포 |
+| 결과 | 버스형 / 목록형 보기, 전체 재추첨, **고른 자리끼리 부분 재추첨**, **결석 처리** |
+| 저장 | 이미지(PNG) 저장, 인쇄, 인쇄 창에서 PDF 저장 |
+| 작업 관리 | 반별 작업 자동 저장, 다시 열면 이어서 사용, 기록 전체 삭제 |
+| 앱 설치 | 휴대폰·PC 홈 화면에 설치, **인터넷 없이도 동작** |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 개인정보
 
-## Expanding the Oxlint configuration
+- 회원가입이 없습니다.
+- 학생 이름과 결과는 **사용하는 기기의 브라우저 안에만** 저장되며, 외부 서버로 보내지 않습니다.
+- 작업 목록의 **"저장 기록 모두 지우기"** 로 언제든 지울 수 있습니다.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## 공정성
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- 결과는 추첨 버튼을 누르는 순간 `crypto.getRandomValues` 기반 Fisher–Yates 셔플로 먼저 정해집니다.
+- 5초 동안 이름이 바뀌는 것은 화면 연출일 뿐, 결과를 다시 계산하지 않습니다.
+- 자동 테스트로 "모든 학생이 모든 좌석에 고르게 배정되는지"를 확인합니다.
+
+## 개발자용
+
+필요한 것: [Node.js](https://nodejs.org/) 20 이상
+
+```bash
+npm install      # 처음 한 번 설치
+npm run dev      # 개발 서버 실행 (http://localhost:5173)
+npm test         # 자동 테스트 (PRD 21장 시나리오)
+npm run lint     # 코드 검사
+npm run build    # 배포용 파일 만들기 (dist 폴더)
+npm run preview  # 배포용 파일 미리 보기
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### 폴더 구조
+
+```text
+src/
+  App.tsx                  화면 전체 흐름과 상태
+  components/              화면 조각 (버스, 명단 입력, 결과표, 인쇄 양식, 버스 편집, 작업 관리 등)
+  hooks/useDrawAnimation   5초 추첨 연출 (결과는 바꾸지 않음)
+  utils/drawEngine         추첨·부분 재추첨·결석 처리 (핵심 로직)
+  utils/importStudents     엑셀/CSV 명단 읽기
+  utils/exportImage        결과 이미지(PNG) 만들기
+  data/                    버스 템플릿, 내 버스, 저장된 작업
+  __tests__/               자동 테스트
+```
+
+기술: React 19 · TypeScript · Vite 8 · vite-plugin-pwa · read-excel-file · Vitest
+
+기획 문서: [체험학습_버스자리_PRD_2.0.md](체험학습_버스자리_PRD_2.0.md)
