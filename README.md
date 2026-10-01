@@ -4,6 +4,9 @@
 
 **버스 선택 → 학생 명단 입력 → 좌석 선택 → 🎰 5초 추첨 → 🎉 결과 공개 → 저장/인쇄**
 
+👉 **바로 사용하기: https://joa4242-alt.github.io/anti/**
+(휴대폰·PC 브라우저에서 열고 "홈 화면에 추가" 또는 "설치"를 누르면 앱처럼 쓸 수 있어요)
+
 ## 주요 기능
 
 | 기능 | 설명 |
@@ -41,6 +44,10 @@ npm run lint     # 코드 검사
 npm run build    # 배포용 파일 만들기 (dist 폴더)
 npm run preview  # 배포용 파일 미리 보기
 ```
+
+### 배포
+
+`main` 브랜치에 push하면 GitHub Actions가 테스트·린트를 통과한 뒤 자동으로 GitHub Pages에 배포합니다 ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)). 테스트가 실패하면 배포되지 않습니다.
 
 ### 폴더 구조
 
