@@ -174,3 +174,39 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* 엑셀 불러오기 */
+.btn-file-import {
+  flex: 2;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  padding: 0.5rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-file-import:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.import-message {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.import-message.ok {
+  background: rgba(52, 211, 153, 0.12);
+  color: #6ee7b7;
+}
+
+.import-message.error {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fcd34d;
+}

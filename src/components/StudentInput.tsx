@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import type { Student } from '../types/bus';
 import { SAMPLE_STUDENTS_30 } from '../utils/studentSanitizer';
+import { readStudentNamesFromFile } from '../utils/importStudents';
 import './StudentInput.css';
 
 interface StudentInputProps {
@@ -16,6 +17,36 @@ export const StudentInput: React.FC<StudentInputProps> = ({
   onTextChange,
   disabled = false,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importMessage, setImportMessage] = useState<{ type: 'ok' | 'error'; text: string } | null>(
+    null
+  );
+
+  // 엑셀/CSV 파일에서 명단 불러오기
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // 같은 파일을 다시 골라도 동작하도록
+    if (!file) return;
+
+    try {
+      const names = await readStudentNamesFromFile(file);
+      if (names.length === 0) {
+        setImportMessage({ type: 'error', text: '파일에서 학생 이름을 찾지 못했어요. 이름이 한 칸에 하나씩 있는지 확인해 주세요.' });
+        return;
+      }
+      if (rawText.trim() && !window.confirm(`지금 입력된 명단을 '${file.name}'의 ${names.length}명으로 바꿀까요?`)) {
+        return;
+      }
+      onTextChange(names.join('\n'));
+      setImportMessage({ type: 'ok', text: `'${file.name}'에서 ${names.length}명을 불러왔어요. 아래 명단이 맞는지 확인해 주세요.` });
+    } catch (error) {
+      setImportMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : '파일을 읽지 못했어요.',
+      });
+    }
+  };
+
   const handleLoadSample = () => {
     onTextChange(SAMPLE_STUDENTS_30);
   };
@@ -30,7 +61,7 @@ export const StudentInput: React.FC<StudentInputProps> = ({
     nameCounts.set(s.name, (nameCounts.get(s.name) || 0) + 1);
   });
   const duplicateNames = Array.from(nameCounts.entries())
-    .filter(([_, count]) => count > 1)
+    .filter(([, count]) => count > 1)
     .map(([name]) => name);
 
   return (
@@ -77,17 +108,39 @@ export const StudentInput: React.FC<StudentInputProps> = ({
           onClick={handleLoadSample}
           disabled={disabled}
         >
-          📋 샘플 30명 채우기
+          📋 샘플 30명
         </button>
+        <button
+          type="button"
+          className="btn-file-import"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled}
+        >
+          📂 엑셀 불러오기
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls,.csv,.txt"
+          onChange={handleFileChange}
+          hidden
+        />
         <button
           type="button"
           className="btn-text-clear"
           onClick={handleClear}
           disabled={disabled || !rawText}
         >
-          🗑️ 명단 비우기
+          🗑️ 비우기
         </button>
       </div>
+
+      {importMessage && (
+        <div className={`import-message ${importMessage.type}`} role="status">
+          {importMessage.type === 'ok' ? '✅ ' : '⚠️ '}
+          {importMessage.text}
+        </div>
+      )}
     </div>
   );
 };

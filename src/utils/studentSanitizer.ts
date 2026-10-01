@@ -3,7 +3,7 @@ import type { Student } from '../types/bus';
 /**
  * 줄바꿈 텍스트를 파싱하여 정제된 Student 객체 배열을 생성합니다.
  * - 한 줄당 학생 1명으로 처리
- * - 앞뒤 공백 및 빈 줄 제거
+ * - 앞뒤 공백 및 빈 줄 제거, 이름 안의 연속 공백은 한 칸으로
  * - 동명이인을 지원하기 위해 각 줄마다 고유 studentId 부여
  */
 export const parseStudentList = (rawText: string): Student[] => {
@@ -13,7 +13,7 @@ export const parseStudentList = (rawText: string): Student[] => {
   const sanitizedStudents: Student[] = [];
 
   lines.forEach((line) => {
-    const trimmed = line.trim();
+    const trimmed = line.trim().replace(/\s+/g, ' ');
     if (trimmed.length > 0) {
       sanitizedStudents.push({
         id: `student-${sanitizedStudents.length + 1}`,

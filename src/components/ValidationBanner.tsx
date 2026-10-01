@@ -20,7 +20,7 @@ export const ValidationBanner: React.FC<ValidationBannerProps> = ({
         type: 'info',
         icon: '📝',
         message: '학생 명단을 입력해 주세요.',
-        subMessage: '명단을 입력하거나 [샘플 30명 채우기] 버튼을 눌러주세요.',
+        subMessage: '명단을 입력하거나 [엑셀 불러오기]·[샘플 30명] 버튼을 눌러주세요.',
       };
     }
 
