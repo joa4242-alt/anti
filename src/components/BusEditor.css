@@ -1,0 +1,161 @@
+.bus-editor {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+}
+
+.bus-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bus-editor-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.bus-editor-count {
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.bus-editor-guide {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0.4rem 0 0.75rem;
+}
+
+.bus-editor-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.bus-editor-field span {
+  flex: 0 0 4.5rem;
+  font-weight: 600;
+}
+
+.bus-editor-field input,
+.bus-editor-field select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.bus-editor-rows {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0.75rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.bus-editor-rows span {
+  flex: 1;
+  font-weight: 600;
+}
+
+.bus-editor-rows button {
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid #475569;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bus-editor-rows button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bus-editor-front {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0.3rem 0;
+}
+
+.bus-editor-grid {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.bus-editor-cell {
+  height: 38px;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  cursor: pointer;
+}
+
+.bus-editor-cell.seat {
+  background: #0369a1;
+  border: 1.5px solid #38bdf8;
+  color: #ffffff;
+}
+
+.bus-editor-cell.empty {
+  background: transparent;
+  border: 1.5px dashed #334155;
+  color: #475569;
+}
+
+.bus-editor-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.bus-editor-actions button {
+  flex: 1;
+  padding: 0.55rem;
+  border-radius: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bus-editor-cancel {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+}
+
+.bus-editor-save {
+  background: #0284c7;
+  border: 1px solid #38bdf8;
+  color: #ffffff;
+}
+
+.bus-editor-save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bus-editor-hint {
+  margin: 0.4rem 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: #fbbf24;
+}

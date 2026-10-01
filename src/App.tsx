@@ -6,12 +6,15 @@ import { ValidationBanner } from './components/ValidationBanner';
 import { Confetti } from './components/Confetti';
 import { ResultList } from './components/ResultList';
 import { PrintSheet } from './components/PrintSheet';
+import { BusEditor } from './components/BusEditor';
+import { isValidTemplate } from './data/customBus';
+import { STORAGE_KEYS, loadJSON, saveJSON } from './utils/storage';
 import { downloadResultImage } from './utils/exportImage';
 import { useDrawAnimation } from './hooks/useDrawAnimation';
 import { playFanfare, playTick, unlockAudio } from './utils/sound';
 import { parseStudentList } from './utils/studentSanitizer';
 import { createDrawSession } from './utils/drawEngine';
-import type { DrawSession } from './types/bus';
+import type { BusTemplate, DrawSession } from './types/bus';
 import './App.css';
 
 function App() {
@@ -21,15 +24,17 @@ function App() {
   const [drawSession, setDrawSession] = useState<DrawSession | null>(null);
   // 결과 보기 방식: 버스형 / 목록형 (PRD 10장)
   const [resultView, setResultView] = useState<'bus' | 'list'>('bus');
+  // 사용자가 만든 버스 (이 기기에 저장)
+  const [customBuses, setCustomBuses] = useState<BusTemplate[]>(() =>
+    loadJSON<unknown[]>(STORAGE_KEYS.customBuses, []).filter(isValidTemplate)
+  );
+  const [isEditingBus, setIsEditingBus] = useState(false);
+  const allTemplates = useMemo(() => [...BUS_TEMPLATES, ...customBuses], [customBuses]);
 
   // 사운드 ON/OFF (연출 도중 토글도 즉시 반영되도록 ref로도 보관)
-  const [soundOn, setSoundOn] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('soundOn') !== 'false';
-    } catch {
-      return true;
-    }
-  });
+  const [soundOn, setSoundOn] = useState<boolean>(
+    () => loadJSON<boolean>(STORAGE_KEYS.soundOn, true) !== false
+  );
   const soundOnRef = useRef(soundOn);
   const busAreaRef = useRef<HTMLDivElement>(null);
 
@@ -37,11 +42,7 @@ function App() {
     const next = !soundOn;
     setSoundOn(next);
     soundOnRef.current = next;
-    try {
-      localStorage.setItem('soundOn', String(next));
-    } catch {
-      // 저장 실패는 무시 (사생활 보호 모드 등)
-    }
+    saveJSON(STORAGE_KEYS.soundOn, next);
   };
 
   // 추첨 연출: 결과는 이미 drawSession에 있고, 연출이 끝나면 공개된다
@@ -56,7 +57,7 @@ function App() {
   const isDrawing = drawAnimation.isDrawing;
 
   const currentTemplate =
-    BUS_TEMPLATES.find((t) => t.id === selectedTemplateId) || BUS_TEMPLATES[0];
+    allTemplates.find((t) => t.id === selectedTemplateId) || BUS_TEMPLATES[0];
 
   // 정제된 학생 객체 목록
   const parsedStudents = useMemo(
@@ -88,12 +89,35 @@ function App() {
   };
 
   // 템플릿 변경 처리
-  const handleTemplateChange = (templateId: string) => {
-    setSelectedTemplateId(templateId);
+  const selectTemplate = (template: BusTemplate) => {
+    setSelectedTemplateId(template.id);
     setDrawSession(null);
-    const newTemplate =
-      BUS_TEMPLATES.find((t) => t.id === templateId) || BUS_TEMPLATES[0];
-    setSelectedSeatIds(newTemplate.seats.map((s) => s.id));
+    setSelectedSeatIds(template.seats.map((s) => s.id));
+  };
+
+  const handleTemplateChange = (templateId: string) => {
+    selectTemplate(allTemplates.find((t) => t.id === templateId) || BUS_TEMPLATES[0]);
+  };
+
+  // 내 버스 저장
+  const handleSaveCustomBus = (template: BusTemplate) => {
+    const next = [...customBuses, template];
+    setCustomBuses(next);
+    if (!saveJSON(STORAGE_KEYS.customBuses, next)) {
+      alert('이 브라우저에는 저장할 수 없어서, 페이지를 닫으면 이 버스가 사라집니다.');
+    }
+    setIsEditingBus(false);
+    selectTemplate(template);
+  };
+
+  // 내 버스 삭제
+  const handleDeleteCustomBus = () => {
+    if (!currentTemplate.isCustom) return;
+    if (!window.confirm(`'${currentTemplate.name}' 버스를 삭제할까요?`)) return;
+    const next = customBuses.filter((t) => t.id !== currentTemplate.id);
+    setCustomBuses(next);
+    saveJSON(STORAGE_KEYS.customBuses, next);
+    selectTemplate(BUS_TEMPLATES[0]);
   };
 
   // 좌석 단일 선택/해제 토글
@@ -152,7 +176,7 @@ function App() {
     setDrawSession(null);
     setResultView('bus');
     setRawStudentText('');
-    handleTemplateChange(BUS_TEMPLATES[0].id);
+    selectTemplate(BUS_TEMPLATES[0]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -193,7 +217,7 @@ function App() {
         <section className="bus-selector-section">
           <label className="selector-label">버스 종류 선택</label>
           <div className="bus-tab-group">
-            {BUS_TEMPLATES.map((template) => (
+            {allTemplates.map((template) => (
               <button
                 key={template.id}
                 type="button"
@@ -208,8 +232,36 @@ function App() {
                 <span className="tab-badge">{template.capacity}석</span>
               </button>
             ))}
+            <button
+              type="button"
+              className="bus-tab-button add-bus-tab"
+              onClick={() => setIsEditingBus(true)}
+              disabled={isDrawing || isEditingBus}
+            >
+              <span className="tab-icon">🛠️</span>
+              <span className="tab-name">내 버스 만들기</span>
+              <span className="tab-badge">+</span>
+            </button>
           </div>
+          {currentTemplate.isCustom && (
+            <button
+              type="button"
+              className="delete-bus-btn"
+              onClick={handleDeleteCustomBus}
+              disabled={isDrawing}
+            >
+              🗑️ '{currentTemplate.name}' 삭제
+            </button>
+          )}
         </section>
+
+        {isEditingBus && (
+          <BusEditor
+            baseTemplates={allTemplates}
+            onSave={handleSaveCustomBus}
+            onCancel={() => setIsEditingBus(false)}
+          />
+        )}
 
         {/* 학생 명단 입력 섹션 */}
         <StudentInput

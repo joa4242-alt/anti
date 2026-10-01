@@ -319,3 +319,26 @@
   background: rgba(52, 211, 153, 0.25);
   border-color: #34d399;
 }
+
+/* 내 버스 만들기 */
+.add-bus-tab {
+  border-style: dashed;
+}
+
+.delete-bus-btn {
+  display: block;
+  margin: 0.5rem auto 0;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: transparent;
+  color: #f87171;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-bus-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

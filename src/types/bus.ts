@@ -14,11 +14,12 @@ export interface Seat {
 }
 
 export interface BusTemplate {
-  id: 'bus-45' | 'bus-28' | 'bus-25';
+  id: string; // 기본: 'bus-45' | 'bus-28' | 'bus-25', 사용자 버스: 'custom-...'
   name: string;
   capacity: number;
   totalRows: number;
   seats: Seat[];
+  isCustom?: boolean; // 사용자가 직접 만든 버스
 }
 
 export interface Assignment {

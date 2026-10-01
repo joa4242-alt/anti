@@ -28,30 +28,22 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
     seatMap.set(`${seat.y}-${seat.x}`, seat);
   });
 
-  const getColumnHeaderLabels = () => {
-    if (template.id === 'bus-28') {
-      return ['창가', '복도', '통로', '통로', '창가'];
-    }
-    if (template.id === 'bus-25') {
-      return ['창가', '통로', '통로', '복도', '창가'];
-    }
-    return ['창가', '복도', '통로', '복도', '창가'];
-  };
+  // 통로 열: 맨 뒷줄을 제외한 모든 행에 좌석이 없는 열
+  const aisleCols = new Set(
+    [0, 1, 2, 3, 4].filter((col) =>
+      template.seats.every((seat) => seat.x !== col || seat.y === template.totalRows - 1)
+    )
+  );
+  const firstAisleCol = Math.min(...aisleCols);
 
-  const isAisleCell = (templateId: string, rowIndex: number, colIndex: number, totalRows: number) => {
-    if (rowIndex === totalRows - 1) return false;
+  const getColumnHeaderLabels = () =>
+    [0, 1, 2, 3, 4].map((col) => {
+      if (aisleCols.has(col)) return '통로';
+      return col === 0 || col === 4 ? '창가' : '복도';
+    });
 
-    if (templateId === 'bus-45') {
-      return colIndex === 2;
-    }
-    if (templateId === 'bus-28') {
-      return colIndex === 2 || colIndex === 3;
-    }
-    if (templateId === 'bus-25') {
-      return colIndex === 1 || colIndex === 2;
-    }
-    return colIndex === 2;
-  };
+  const isAisleCell = (rowIndex: number, colIndex: number) =>
+    rowIndex !== template.totalRows - 1 && aisleCols.has(colIndex);
 
   const renderRow = (rowIndex: number) => {
     return (
@@ -104,10 +96,10 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
             );
           }
 
-          if (isAisleCell(template.id, rowIndex, colIndex, template.totalRows)) {
+          if (isAisleCell(rowIndex, colIndex)) {
             return (
               <div key={`aisle-${rowIndex}-${colIndex}`} className="bus-aisle-cell">
-                {rowIndex === 0 && colIndex === (template.id === 'bus-25' ? 1 : 2) && (
+                {rowIndex === 0 && colIndex === firstAisleCol && (
                   <span className="aisle-label">통로</span>
                 )}
               </div>
