@@ -167,3 +167,10 @@
     font-size: 0.85rem;
   }
 }
+
+/* 추첨 연출 중 잠금 */
+.student-textarea:disabled,
+.btn-sample-fill:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

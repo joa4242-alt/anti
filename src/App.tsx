@@ -1,8 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { BUS_TEMPLATES } from './data/busTemplates';
 import { BusLayout } from './components/BusLayout';
 import { StudentInput } from './components/StudentInput';
 import { ValidationBanner } from './components/ValidationBanner';
+import { Confetti } from './components/Confetti';
+import { useDrawAnimation } from './hooks/useDrawAnimation';
+import { playFanfare, playTick, unlockAudio } from './utils/sound';
 import { parseStudentList } from './utils/studentSanitizer';
 import { createDrawSession } from './utils/drawEngine';
 import type { DrawSession } from './types/bus';
@@ -13,6 +16,39 @@ function App() {
   const [rawStudentText, setRawStudentText] = useState<string>('');
   // 추첨 결과. 입력(버스/명단)이 바뀌면 무효화합니다.
   const [drawSession, setDrawSession] = useState<DrawSession | null>(null);
+
+  // 사운드 ON/OFF (연출 도중 토글도 즉시 반영되도록 ref로도 보관)
+  const [soundOn, setSoundOn] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('soundOn') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const soundOnRef = useRef(soundOn);
+  const busAreaRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleSound = () => {
+    const next = !soundOn;
+    setSoundOn(next);
+    soundOnRef.current = next;
+    try {
+      localStorage.setItem('soundOn', String(next));
+    } catch {
+      // 저장 실패는 무시 (사생활 보호 모드 등)
+    }
+  };
+
+  // 추첨 연출: 결과는 이미 drawSession에 있고, 연출이 끝나면 공개된다
+  const drawAnimation = useDrawAnimation({
+    onTick: () => {
+      if (soundOnRef.current) playTick();
+    },
+    onReveal: () => {
+      if (soundOnRef.current) playFanfare();
+    },
+  });
+  const isDrawing = drawAnimation.isDrawing;
 
   const currentTemplate =
     BUS_TEMPLATES.find((t) => t.id === selectedTemplateId) || BUS_TEMPLATES[0];
@@ -29,13 +65,16 @@ function App() {
   );
 
   // 좌석 ID → 학생 이름 (결과 표시용)
-  const assignedNames = useMemo(() => {
+  const resultNames = useMemo(() => {
     if (!drawSession) return undefined;
     const nameById = new Map(drawSession.students.map((s) => [s.id, s.name]));
     return new Map(
       drawSession.assignments.map((a) => [a.seatId, nameById.get(a.studentId) ?? ''])
     );
   }, [drawSession]);
+
+  // 연출 중에는 임시 이름, 끝나면 실제 결과
+  const assignedNames = drawAnimation.spinNames ?? resultNames;
 
   // 명단 변경 처리
   const handleStudentTextChange = (text: string) => {
@@ -71,15 +110,31 @@ function App() {
     setSelectedSeatIds([]);
   };
 
-  // 추첨 실행: 실제 결과를 먼저 생성해 보관 (연출은 Phase 6에서 추가)
+  // 추첨 실행: 실제 결과 생성 → 내부 보관 → 5초 연출 → 공개
   const handleStartDraw = () => {
-    setDrawSession(
-      createDrawSession(currentTemplate.id, parsedStudents, selectedSeatIds)
+    // 클릭(사용자 상호작용) 안에서 오디오를 깨워야 자동재생 제한에 걸리지 않는다
+    unlockAudio();
+    const session = createDrawSession(
+      currentTemplate.id,
+      parsedStudents,
+      selectedSeatIds
     );
+    setDrawSession(session);
+    drawAnimation.start(session);
+    // 휴대폰에서도 연출이 보이도록 버스 화면으로 이동
+    busAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // 전체 재추첨 (PRD 11장: 확인 후 진행)
+  const handleRedraw = () => {
+    if (window.confirm('현재 결과를 새로운 결과로 바꿀까요?')) {
+      handleStartDraw();
+    }
   };
 
   // 결과를 닫고 좌석 선택 화면으로 복귀
   const handleResetDraw = () => {
+    drawAnimation.cancel();
     setDrawSession(null);
   };
 
@@ -88,6 +143,14 @@ function App() {
       <header className="app-header">
         <h1 className="app-title">🚌 체험학습 버스자리</h1>
         <p className="app-subtitle">초등학교 체험학습용 버스 좌석 배치</p>
+        <button
+          type="button"
+          className="sound-toggle-btn"
+          onClick={handleToggleSound}
+          aria-pressed={soundOn}
+        >
+          {soundOn ? '🔊 소리 ON' : '🔇 소리 OFF'}
+        </button>
       </header>
 
       <main className="app-main">
@@ -103,6 +166,7 @@ function App() {
                   selectedTemplateId === template.id ? 'active' : ''
                 }`}
                 onClick={() => handleTemplateChange(template.id)}
+                disabled={isDrawing}
               >
                 <span className="tab-icon">🚌</span>
                 <span className="tab-name">{template.name}</span>
@@ -117,6 +181,7 @@ function App() {
           rawText={rawStudentText}
           students={parsedStudents}
           onTextChange={handleStudentTextChange}
+          disabled={isDrawing}
         />
 
         {/* 버스 정보 & 현황 요약 카드 */}
@@ -139,17 +204,25 @@ function App() {
           </div>
         </section>
 
-        {drawSession ? (
+        {isDrawing ? (
+          /* 추첨 연출 중 */
+          <section className="seat-control-toolbar" aria-live="polite">
+            <span className="control-guide-text drawing-status-text">
+              🎰 추첨 중입니다... 두근두근!
+            </span>
+          </section>
+        ) : drawSession ? (
           /* 추첨 결과 툴바 */
           <section className="seat-control-toolbar">
             <span className="control-guide-text">
               🎉 학생 {drawSession.assignments.length}명의 자리 배정이 완료되었습니다.
+              <Confetti key={drawSession.id} />
             </span>
             <div className="control-button-group">
               <button
                 type="button"
                 className="ctrl-btn select-all-btn"
-                onClick={handleStartDraw}
+                onClick={handleRedraw}
               >
                 🔄 전체 재추첨
               </button>
@@ -197,16 +270,19 @@ function App() {
         )}
 
         {/* 좌석 배치 및 인터랙션 레이아웃 */}
-        <BusLayout
-          template={currentTemplate}
-          selectedSeatIds={selectedSeatIds}
-          onToggleSeat={handleToggleSeat}
-          assignedNames={assignedNames}
-        />
+        <div ref={busAreaRef}>
+          <BusLayout
+            template={currentTemplate}
+            selectedSeatIds={selectedSeatIds}
+            onToggleSeat={handleToggleSeat}
+            assignedNames={assignedNames}
+            isSpinning={isDrawing}
+          />
+        </div>
       </main>
 
       <footer className="app-footer">
-        <p>체험학습 버스자리 PWA - 랜덤 배정 연결 완료</p>
+        <p>체험학습 버스자리 PWA - 추첨 연출 완료</p>
       </footer>
     </div>
   );

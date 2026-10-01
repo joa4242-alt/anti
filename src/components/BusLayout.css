@@ -282,6 +282,38 @@
   background: #34d399;
 }
 
+.bus-seat-card.assigned {
+  animation: seatReveal 0.45s ease-out;
+}
+
+@keyframes seatReveal {
+  0% { transform: scale(0.85); filter: brightness(1.8); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* 추첨 연출 중 */
+.bus-seat-card.spinning {
+  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+}
+
+.bus-seat-card.spinning .seat-headrest {
+  background: #fbbf24;
+}
+
+.bus-seat-card.spinning .seat-number {
+  font-size: 0.7rem;
+  color: #fde68a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bus-seat-card.assigned {
+    animation: none;
+  }
+}
+
 .bus-seat-card.assigned .seat-number {
   font-size: 0.7rem;
   color: #a7f3d0;

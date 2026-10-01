@@ -8,6 +8,8 @@ interface BusLayoutProps {
   onToggleSeat: (seatId: string) => void;
   // 추첨 결과 (좌석 ID → 학생 이름). 값이 있으면 결과 표시 모드로 좌석 선택이 잠깁니다.
   assignedNames?: Map<string, string>;
+  // true면 추첨 연출 중 (이름이 임시로 바뀌는 중)
+  isSpinning?: boolean;
 }
 
 export const BusLayout: React.FC<BusLayoutProps> = ({
@@ -15,6 +17,7 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
   selectedSeatIds,
   onToggleSeat,
   assignedNames,
+  isSpinning = false,
 }) => {
   const isResultMode = assignedNames !== undefined;
   const selectedSet = new Set(selectedSeatIds);
@@ -64,7 +67,9 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
               return (
                 <div
                   key={seat.id}
-                  className={`bus-seat-card result ${studentName ? 'assigned' : 'unused'}`}
+                  className={`bus-seat-card result ${
+                    studentName ? (isSpinning ? 'spinning' : 'assigned') : 'unused'
+                  }`}
                   title={
                     studentName
                       ? `좌석 ${seat.number}번: ${studentName}`

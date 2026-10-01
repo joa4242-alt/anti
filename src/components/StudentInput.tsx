@@ -7,12 +7,14 @@ interface StudentInputProps {
   rawText: string;
   students: Student[];
   onTextChange: (text: string) => void;
+  disabled?: boolean;
 }
 
 export const StudentInput: React.FC<StudentInputProps> = ({
   rawText,
   students,
   onTextChange,
+  disabled = false,
 }) => {
   const handleLoadSample = () => {
     onTextChange(SAMPLE_STUDENTS_30);
@@ -56,6 +58,7 @@ export const StudentInput: React.FC<StudentInputProps> = ({
           placeholder={`이름을 입력하세요 (예시):\n김민수\n이서준\n박지우`}
           rows={6}
           spellCheck={false}
+          disabled={disabled}
         />
       </div>
 
@@ -72,6 +75,7 @@ export const StudentInput: React.FC<StudentInputProps> = ({
           type="button"
           className="btn-sample-fill"
           onClick={handleLoadSample}
+          disabled={disabled}
         >
           📋 샘플 30명 채우기
         </button>
@@ -79,7 +83,7 @@ export const StudentInput: React.FC<StudentInputProps> = ({
           type="button"
           className="btn-text-clear"
           onClick={handleClear}
-          disabled={!rawText}
+          disabled={disabled || !rawText}
         >
           🗑️ 명단 비우기
         </button>

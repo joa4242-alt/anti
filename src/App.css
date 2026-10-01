@@ -265,3 +265,31 @@
     font-size: 0.75rem;
   }
 }
+
+/* 사운드 ON/OFF 토글 */
+.sound-toggle-btn {
+  margin-top: 0.6rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sound-toggle-btn:hover {
+  border-color: #38bdf8;
+}
+
+/* 추첨 연출 중 잠금 */
+.bus-tab-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.drawing-status-text {
+  font-weight: 700;
+  color: #fbbf24;
+}
