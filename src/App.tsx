@@ -4,11 +4,15 @@ import { BusLayout } from './components/BusLayout';
 import { StudentInput } from './components/StudentInput';
 import { ValidationBanner } from './components/ValidationBanner';
 import { parseStudentList } from './utils/studentSanitizer';
+import { createDrawSession } from './utils/drawEngine';
+import type { DrawSession } from './types/bus';
 import './App.css';
 
 function App() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('bus-45');
   const [rawStudentText, setRawStudentText] = useState<string>('');
+  // 추첨 결과. 입력(버스/명단)이 바뀌면 무효화합니다.
+  const [drawSession, setDrawSession] = useState<DrawSession | null>(null);
 
   const currentTemplate =
     BUS_TEMPLATES.find((t) => t.id === selectedTemplateId) || BUS_TEMPLATES[0];
@@ -24,9 +28,25 @@ function App() {
     currentTemplate.seats.map((s) => s.id)
   );
 
+  // 좌석 ID → 학생 이름 (결과 표시용)
+  const assignedNames = useMemo(() => {
+    if (!drawSession) return undefined;
+    const nameById = new Map(drawSession.students.map((s) => [s.id, s.name]));
+    return new Map(
+      drawSession.assignments.map((a) => [a.seatId, nameById.get(a.studentId) ?? ''])
+    );
+  }, [drawSession]);
+
+  // 명단 변경 처리
+  const handleStudentTextChange = (text: string) => {
+    setRawStudentText(text);
+    setDrawSession(null);
+  };
+
   // 템플릿 변경 처리
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplateId(templateId);
+    setDrawSession(null);
     const newTemplate =
       BUS_TEMPLATES.find((t) => t.id === templateId) || BUS_TEMPLATES[0];
     setSelectedSeatIds(newTemplate.seats.map((s) => s.id));
@@ -51,11 +71,16 @@ function App() {
     setSelectedSeatIds([]);
   };
 
-  // Step 5: 추첨 버튼 클릭 시 테스트 핸들러
+  // 추첨 실행: 실제 결과를 먼저 생성해 보관 (연출은 Phase 6에서 추가)
   const handleStartDraw = () => {
-    alert(
-      `🎰 [검증 완료] 학생 ${parsedStudents.length}명과 선택 좌석 ${selectedSeatIds.length}석이 정확히 일치하여 추첨 준비가 완료되었습니다!\n\n(다음 Step 6에서 1:1 무작위 셔플 배정 엔진이 연결됩니다.)`
+    setDrawSession(
+      createDrawSession(currentTemplate.id, parsedStudents, selectedSeatIds)
     );
+  };
+
+  // 결과를 닫고 좌석 선택 화면으로 복귀
+  const handleResetDraw = () => {
+    setDrawSession(null);
   };
 
   return (
@@ -91,7 +116,7 @@ function App() {
         <StudentInput
           rawText={rawStudentText}
           students={parsedStudents}
-          onTextChange={setRawStudentText}
+          onTextChange={handleStudentTextChange}
         />
 
         {/* 버스 정보 & 현황 요약 카드 */}
@@ -114,46 +139,74 @@ function App() {
           </div>
         </section>
 
-        {/* 유효성 검증 및 추첨 시작 배너 (Step 5) */}
-        <ValidationBanner
-          studentCount={parsedStudents.length}
-          selectedSeatCount={selectedSeatIds.length}
-          onStartDraw={handleStartDraw}
-        />
+        {drawSession ? (
+          /* 추첨 결과 툴바 */
+          <section className="seat-control-toolbar">
+            <span className="control-guide-text">
+              🎉 학생 {drawSession.assignments.length}명의 자리 배정이 완료되었습니다.
+            </span>
+            <div className="control-button-group">
+              <button
+                type="button"
+                className="ctrl-btn select-all-btn"
+                onClick={handleStartDraw}
+              >
+                🔄 전체 재추첨
+              </button>
+              <button
+                type="button"
+                className="ctrl-btn deselect-all-btn"
+                onClick={handleResetDraw}
+              >
+                ✏️ 좌석 다시 선택
+              </button>
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* 유효성 검증 및 추첨 시작 배너 */}
+            <ValidationBanner
+              studentCount={parsedStudents.length}
+              selectedSeatCount={selectedSeatIds.length}
+              onStartDraw={handleStartDraw}
+            />
 
-        {/* 좌석 선택 제어 툴바 */}
-        <section className="seat-control-toolbar">
-          <span className="control-guide-text">
-            💡 좌석을 터치하여 추첨 대상 좌석을 선택/해제하세요.
-          </span>
-          <div className="control-button-group">
-            <button
-              type="button"
-              className="ctrl-btn select-all-btn"
-              onClick={handleSelectAll}
-            >
-              ✓ 전체 선택 ({currentTemplate.capacity}석)
-            </button>
-            <button
-              type="button"
-              className="ctrl-btn deselect-all-btn"
-              onClick={handleDeselectAll}
-            >
-              ✕ 전체 해제
-            </button>
-          </div>
-        </section>
+            {/* 좌석 선택 제어 툴바 */}
+            <section className="seat-control-toolbar">
+              <span className="control-guide-text">
+                💡 좌석을 터치하여 추첨 대상 좌석을 선택/해제하세요.
+              </span>
+              <div className="control-button-group">
+                <button
+                  type="button"
+                  className="ctrl-btn select-all-btn"
+                  onClick={handleSelectAll}
+                >
+                  ✓ 전체 선택 ({currentTemplate.capacity}석)
+                </button>
+                <button
+                  type="button"
+                  className="ctrl-btn deselect-all-btn"
+                  onClick={handleDeselectAll}
+                >
+                  ✕ 전체 해제
+                </button>
+              </div>
+            </section>
+          </>
+        )}
 
         {/* 좌석 배치 및 인터랙션 레이아웃 */}
         <BusLayout
           template={currentTemplate}
           selectedSeatIds={selectedSeatIds}
           onToggleSeat={handleToggleSeat}
+          assignedNames={assignedNames}
         />
       </main>
 
       <footer className="app-footer">
-        <p>체험학습 버스자리 PWA - Step 5: 검증 및 추첨 버튼 제어 완료</p>
+        <p>체험학습 버스자리 PWA - 랜덤 배정 연결 완료</p>
       </footer>
     </div>
   );

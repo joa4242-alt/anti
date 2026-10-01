@@ -6,13 +6,17 @@ interface BusLayoutProps {
   template: BusTemplate;
   selectedSeatIds: string[];
   onToggleSeat: (seatId: string) => void;
+  // 추첨 결과 (좌석 ID → 학생 이름). 값이 있으면 결과 표시 모드로 좌석 선택이 잠깁니다.
+  assignedNames?: Map<string, string>;
 }
 
 export const BusLayout: React.FC<BusLayoutProps> = ({
   template,
   selectedSeatIds,
   onToggleSeat,
+  assignedNames,
 }) => {
+  const isResultMode = assignedNames !== undefined;
   const selectedSet = new Set(selectedSeatIds);
 
   // (row y, col x) 위치 기준 좌석 Map 생성
@@ -54,6 +58,27 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
 
           if (seat) {
             const isSelected = selectedSet.has(seat.id);
+
+            if (isResultMode) {
+              const studentName = assignedNames.get(seat.id);
+              return (
+                <div
+                  key={seat.id}
+                  className={`bus-seat-card result ${studentName ? 'assigned' : 'unused'}`}
+                  title={
+                    studentName
+                      ? `좌석 ${seat.number}번: ${studentName}`
+                      : `좌석 ${seat.number}번 (추첨 제외)`
+                  }
+                >
+                  <div className="seat-headrest" />
+                  <div className="seat-number">
+                    {String(seat.number).padStart(2, '0')}
+                  </div>
+                  <div className="seat-student-name">{studentName ?? '-'}</div>
+                </div>
+              );
+            }
 
             return (
               <button

@@ -262,6 +262,51 @@
   color: #bae6fd;
 }
 
+/* 추첨 결과 표시 모드 */
+.bus-seat-card.result {
+  cursor: default;
+}
+
+.bus-seat-card.result:hover,
+.bus-seat-card.result:active {
+  transform: none;
+}
+
+.bus-seat-card.assigned {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border: 2px solid #34d399;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.35);
+}
+
+.bus-seat-card.assigned .seat-headrest {
+  background: #34d399;
+}
+
+.bus-seat-card.assigned .seat-number {
+  font-size: 0.7rem;
+  color: #a7f3d0;
+}
+
+.bus-seat-card.unused {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.seat-student-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 3px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bus-seat-card.unused .seat-student-name {
+  color: #64748b;
+}
+
 /* 버스 후면부 */
 .bus-rear-area {
   margin-top: 1rem;
@@ -305,5 +350,9 @@
 
   .seat-number {
     font-size: 0.95rem;
+  }
+
+  .seat-student-name {
+    font-size: 0.7rem;
   }
 }
