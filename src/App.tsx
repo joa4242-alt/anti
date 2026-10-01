@@ -5,6 +5,8 @@ import { StudentInput } from './components/StudentInput';
 import { ValidationBanner } from './components/ValidationBanner';
 import { Confetti } from './components/Confetti';
 import { ResultList } from './components/ResultList';
+import { PrintSheet } from './components/PrintSheet';
+import { downloadResultImage } from './utils/exportImage';
 import { useDrawAnimation } from './hooks/useDrawAnimation';
 import { playFanfare, playTick, unlockAudio } from './utils/sound';
 import { parseStudentList } from './utils/studentSanitizer';
@@ -154,6 +156,21 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // 이미지(PNG) 저장
+  const handleSaveImage = async () => {
+    if (!drawSession) return;
+    try {
+      await downloadResultImage(currentTemplate, drawSession);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '이미지 저장에 실패했습니다.');
+    }
+  };
+
+  // 인쇄 (인쇄 창에서 "PDF로 저장"을 고르면 PDF가 된다)
+  const handlePrint = () => {
+    window.print();
+  };
+
   const showResultList = drawSession !== null && !isDrawing && resultView === 'list';
 
   return (
@@ -279,6 +296,22 @@ function App() {
                 🏠 처음으로
               </button>
             </div>
+            <div className="control-button-group">
+              <button
+                type="button"
+                className="ctrl-btn save-btn"
+                onClick={handleSaveImage}
+              >
+                🖼️ 이미지 저장
+              </button>
+              <button
+                type="button"
+                className="ctrl-btn save-btn"
+                onClick={handlePrint}
+              >
+                🖨️ 인쇄 / PDF
+              </button>
+            </div>
           </section>
         ) : (
           <>
@@ -330,8 +363,13 @@ function App() {
         </div>
       </main>
 
+      {/* 인쇄 전용 배정표 (화면에는 보이지 않음) */}
+      {drawSession && !isDrawing && (
+        <PrintSheet template={currentTemplate} session={drawSession} />
+      )}
+
       <footer className="app-footer">
-        <p>체험학습 버스자리 PWA - 결과 화면 완료</p>
+        <p>체험학습 버스자리 PWA - 저장·인쇄 완료</p>
       </footer>
     </div>
   );

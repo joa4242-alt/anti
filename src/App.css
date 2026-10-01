@@ -308,3 +308,14 @@
   background: rgba(148, 163, 184, 0.22);
   border-color: #cbd5e1;
 }
+
+.save-btn {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.save-btn:hover {
+  background: rgba(52, 211, 153, 0.25);
+  border-color: #34d399;
+}

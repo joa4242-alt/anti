@@ -1,5 +1,6 @@
 import React from 'react';
 import type { BusTemplate, DrawSession } from '../types/bus';
+import { getResultRows } from '../utils/resultRows';
 import './ResultList.css';
 
 interface ResultListProps {
@@ -7,31 +8,12 @@ interface ResultListProps {
   session: DrawSession;
 }
 
-// 열 위치(x) → 자리 설명
-const getSeatPosition = (template: BusTemplate, x: number, y: number) => {
-  if (y === template.totalRows - 1) return '맨 뒷줄';
-  return x === 0 || x === 4 ? '창가' : '복도';
-};
-
 /**
  * 교사용 목록형 결과표 (PRD 10장).
  * 좌석 번호 순으로 정렬하여 "좌석번호 | 학생" 형태로 보여 줍니다.
  */
 export const ResultList: React.FC<ResultListProps> = ({ template, session }) => {
-  const nameById = new Map(session.students.map((s) => [s.id, s.name]));
-  const seatById = new Map(template.seats.map((s) => [s.id, s]));
-
-  const rows = session.assignments
-    .map((a) => {
-      const seat = seatById.get(a.seatId);
-      return {
-        seatId: a.seatId,
-        seatNumber: seat ? Number(seat.number) : 0,
-        position: seat ? getSeatPosition(template, seat.x, seat.y) : '',
-        studentName: nameById.get(a.studentId) ?? '',
-      };
-    })
-    .sort((a, b) => a.seatNumber - b.seatNumber);
+  const rows = getResultRows(template, session);
 
   return (
     <div className="result-list-container">
