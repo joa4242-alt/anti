@@ -388,3 +388,27 @@
     font-size: 0.7rem;
   }
 }
+
+/* 부분 재추첨 / 결석 처리용으로 고른 좌석 */
+.bus-seat-card.result.pickable {
+  cursor: pointer;
+}
+
+.bus-seat-card.result.pickable:hover {
+  filter: brightness(1.15);
+}
+
+.bus-seat-card.assigned.picked {
+  background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%);
+  border: 2px solid #fb923c;
+  box-shadow: 0 0 12px rgba(251, 146, 60, 0.5);
+  animation: none;
+}
+
+.bus-seat-card.assigned.picked .seat-headrest {
+  background: #fb923c;
+}
+
+.picked-badge {
+  background: #fb923c;
+}

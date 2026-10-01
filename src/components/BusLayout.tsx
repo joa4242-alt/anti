@@ -8,8 +8,11 @@ interface BusLayoutProps {
   onToggleSeat: (seatId: string) => void;
   // 추첨 결과 (좌석 ID → 학생 이름). 값이 있으면 결과 표시 모드로 좌석 선택이 잠깁니다.
   assignedNames?: Map<string, string>;
-  // true면 추첨 연출 중 (이름이 임시로 바뀌는 중)
-  isSpinning?: boolean;
+  // 추첨 연출 중인 좌석 (이름이 임시로 바뀌는 중)
+  spinningSeatIds?: Set<string>;
+  // 결과 화면에서 부분 재추첨/결석 처리용으로 고른 좌석
+  pickedSeatIds?: Set<string>;
+  onPickSeat?: (seatId: string) => void;
 }
 
 export const BusLayout: React.FC<BusLayoutProps> = ({
@@ -17,7 +20,9 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
   selectedSeatIds,
   onToggleSeat,
   assignedNames,
-  isSpinning = false,
+  spinningSeatIds,
+  pickedSeatIds,
+  onPickSeat,
 }) => {
   const isResultMode = assignedNames !== undefined;
   const selectedSet = new Set(selectedSeatIds);
@@ -56,23 +61,50 @@ export const BusLayout: React.FC<BusLayoutProps> = ({
 
             if (isResultMode) {
               const studentName = assignedNames.get(seat.id);
-              return (
-                <div
-                  key={seat.id}
-                  className={`bus-seat-card result ${
-                    studentName ? (isSpinning ? 'spinning' : 'assigned') : 'unused'
-                  }`}
-                  title={
-                    studentName
-                      ? `좌석 ${seat.number}번: ${studentName}`
-                      : `좌석 ${seat.number}번 (추첨 제외)`
-                  }
-                >
+              const isSpinning = spinningSeatIds?.has(seat.id) ?? false;
+              const isPicked = pickedSeatIds?.has(seat.id) ?? false;
+              // 배정된 좌석은 연출 중이 아닐 때 눌러서 고를 수 있다
+              const canPick = !!studentName && !spinningSeatIds && !!onPickSeat;
+              const className = `bus-seat-card result ${
+                studentName ? (isSpinning ? 'spinning' : 'assigned') : 'unused'
+              } ${isPicked ? 'picked' : ''} ${canPick ? 'pickable' : ''}`;
+              const content = (
+                <>
                   <div className="seat-headrest" />
+                  {isPicked && <div className="seat-check-badge picked-badge">✓</div>}
                   <div className="seat-number">
                     {String(seat.number).padStart(2, '0')}
                   </div>
                   <div className="seat-student-name">{studentName ?? '-'}</div>
+                </>
+              );
+
+              if (canPick) {
+                return (
+                  <button
+                    key={seat.id}
+                    type="button"
+                    className={className}
+                    onClick={() => onPickSeat(seat.id)}
+                    aria-pressed={isPicked}
+                    title={`좌석 ${seat.number}번: ${studentName} (${isPicked ? '고름 - 누르면 취소' : '누르면 고르기'})`}
+                  >
+                    {content}
+                  </button>
+                );
+              }
+
+              return (
+                <div
+                  key={seat.id}
+                  className={className}
+                  title={
+                    studentName
+                      ? `좌석 ${seat.number}번: ${studentName}`
+                      : `좌석 ${seat.number}번 (비어 있음)`
+                  }
+                >
+                  {content}
                 </div>
               );
             }

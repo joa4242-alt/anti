@@ -13,7 +13,7 @@ import { downloadResultImage } from './utils/exportImage';
 import { useDrawAnimation } from './hooks/useDrawAnimation';
 import { playFanfare, playTick, unlockAudio } from './utils/sound';
 import { parseStudentList } from './utils/studentSanitizer';
-import { createDrawSession } from './utils/drawEngine';
+import { createDrawSession, removeSeats, reshuffleSeats } from './utils/drawEngine';
 import type { BusTemplate, DrawSession } from './types/bus';
 import './App.css';
 
@@ -79,8 +79,18 @@ function App() {
     );
   }, [drawSession]);
 
-  // 연출 중에는 임시 이름, 끝나면 실제 결과
-  const assignedNames = drawAnimation.spinNames ?? resultNames;
+  // 연출 중에는 임시 이름(부분 재추첨이면 해당 좌석만), 끝나면 실제 결과
+  const spinNames = drawAnimation.spinNames;
+  const assignedNames = spinNames ? new Map([...(resultNames ?? []), ...spinNames]) : resultNames;
+  const spinningSeatIds = spinNames ? new Set(spinNames.keys()) : undefined;
+
+  // 결과 화면에서 고른 좌석 (결과가 바뀌면 자동으로 비워지도록 결과 ID와 함께 보관)
+  const [picked, setPicked] = useState<{ sessionId: string; seatIds: string[] }>({
+    sessionId: '',
+    seatIds: [],
+  });
+  const pickedSeatIds = drawSession && picked.sessionId === drawSession.id ? picked.seatIds : [];
+  const pickedSet = new Set(pickedSeatIds);
 
   // 명단 변경 처리
   const handleStudentTextChange = (text: string) => {
@@ -159,6 +169,59 @@ function App() {
     if (window.confirm('현재 결과를 새로운 결과로 바꿀까요?')) {
       handleStartDraw();
     }
+  };
+
+  // 결과 화면에서 좌석 고르기/취소
+  const handlePickSeat = (seatId: string) => {
+    if (!drawSession) return;
+    const sessionId = drawSession.id;
+    setPicked((prev) => {
+      const current = prev.sessionId === sessionId ? prev.seatIds : [];
+      return {
+        sessionId,
+        seatIds: current.includes(seatId)
+          ? current.filter((id) => id !== seatId)
+          : [...current, seatId],
+      };
+    });
+  };
+
+  const clearPicked = () => setPicked({ sessionId: '', seatIds: [] });
+
+  // 고른 좌석의 학생 이름
+  const pickedNames = () => {
+    const nameById = new Map(drawSession?.students.map((st) => [st.id, st.name]));
+    return (drawSession?.assignments ?? [])
+      .filter((a) => pickedSet.has(a.seatId))
+      .map((a) => nameById.get(a.studentId) ?? '');
+  };
+
+  // 부분 재추첨: 고른 자리끼리만 다시 섞기
+  const handlePartialRedraw = () => {
+    if (!drawSession || pickedSeatIds.length < 2) return;
+    const names = pickedNames();
+    if (!window.confirm(`${names.join(', ')} 학생 ${names.length}명의 자리만 서로 다시 추첨할까요?\n다른 학생 자리는 그대로예요.`)) {
+      return;
+    }
+    unlockAudio();
+    const session = reshuffleSeats(drawSession, pickedSeatIds);
+    setDrawSession(session);
+    drawAnimation.start(session, pickedSeatIds);
+  };
+
+  // 결석 처리: 고른 자리의 학생을 명단에서 빼고 자리를 비운다 (PRD 12장)
+  const handleMarkAbsent = () => {
+    if (!drawSession || pickedSeatIds.length === 0) return;
+    const names = pickedNames();
+    if (!window.confirm(`${names.join(', ')} 학생을 결석 처리할까요?\n명단에서 빠지고 자리는 비워져요.`)) {
+      return;
+    }
+    const session = removeSeats(drawSession, pickedSeatIds);
+    setDrawSession(session);
+    // 전체 재추첨을 해도 학생 수와 좌석 수가 맞도록 명단과 좌석 선택에서도 뺀다
+    setRawStudentText(session.students.map((st) => st.name).join('\n'));
+    setSelectedSeatIds((prev) => prev.filter((id) => !pickedSet.has(id)));
+    clearPicked();
   };
 
   // 결과를 닫고 좌석 선택 화면으로 복귀
@@ -305,6 +368,46 @@ function App() {
               🎉 학생 {drawSession.assignments.length}명의 자리 배정이 완료되었습니다.
               <Confetti key={drawSession.id} />
             </span>
+            {resultView === 'bus' && (
+              <div className="partial-panel">
+                {pickedSeatIds.length === 0 ? (
+                  <span className="partial-guide">
+                    💡 자리를 눌러 고르면 그 자리만 다시 추첨하거나 결석 처리할 수 있어요.
+                  </span>
+                ) : (
+                  <>
+                    <span className="partial-guide picked">
+                      ✓ {pickedSeatIds.length}자리 고름: {pickedNames().join(', ')}
+                    </span>
+                    <div className="control-button-group">
+                      <button
+                        type="button"
+                        className="ctrl-btn partial-btn"
+                        onClick={handlePartialRedraw}
+                        disabled={pickedSeatIds.length < 2}
+                        title={pickedSeatIds.length < 2 ? '2자리 이상 골라 주세요' : undefined}
+                      >
+                        🔀 고른 자리끼리 다시 추첨
+                      </button>
+                      <button
+                        type="button"
+                        className="ctrl-btn deselect-all-btn"
+                        onClick={handleMarkAbsent}
+                      >
+                        🚫 결석 처리
+                      </button>
+                      <button
+                        type="button"
+                        className="ctrl-btn home-btn"
+                        onClick={clearPicked}
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
             <div className="result-view-tabs" role="tablist" aria-label="결과 보기 방식">
               <button
                 type="button"
@@ -409,7 +512,9 @@ function App() {
               selectedSeatIds={selectedSeatIds}
               onToggleSeat={handleToggleSeat}
               assignedNames={assignedNames}
-              isSpinning={isDrawing}
+              spinningSeatIds={spinningSeatIds}
+              pickedSeatIds={pickedSet}
+              onPickSeat={handlePickSeat}
             />
           )}
         </div>
@@ -421,7 +526,7 @@ function App() {
       )}
 
       <footer className="app-footer">
-        <p>체험학습 버스자리 PWA - 저장·인쇄 완료</p>
+        <p>체험학습 버스자리 PWA - Phase 9</p>
       </footer>
     </div>
   );

@@ -36,10 +36,14 @@ export const useDrawAnimation = ({ onTick, onReveal }: DrawAnimationCallbacks) =
 
   useEffect(() => clearTimer, []);
 
-  const start = (session: DrawSession) => {
+  // onlySeatIds를 주면 그 좌석만 연출한다 (부분 재추첨)
+  const start = (session: DrawSession, onlySeatIds?: string[]) => {
     clearTimer();
-    const seatIds = session.assignments.map((a) => a.seatId);
-    const names = session.students.map((s) => s.name);
+    const onlySet = onlySeatIds ? new Set(onlySeatIds) : null;
+    const targets = session.assignments.filter((a) => !onlySet || onlySet.has(a.seatId));
+    const seatIds = targets.map((a) => a.seatId);
+    const nameById = new Map(session.students.map((s) => [s.id, s.name]));
+    const names = targets.map((a) => nameById.get(a.studentId) ?? '');
     const startedAt = performance.now();
 
     const step = () => {

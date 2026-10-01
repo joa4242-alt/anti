@@ -56,3 +56,45 @@ export const createDrawSession = (
     createdAt: new Date().toISOString(),
   };
 };
+
+/**
+ * 부분 재추첨: 고른 좌석에 앉은 학생들끼리만 다시 무작위로 섞습니다.
+ * 나머지 좌석의 배정은 그대로 둡니다. (PRD 23장 부분 재추첨)
+ */
+export const reshuffleSeats = (session: DrawSession, seatIds: string[]): DrawSession => {
+  const targetSet = new Set(seatIds);
+  const targets = session.assignments.filter((a) => targetSet.has(a.seatId));
+  if (targets.length < 2) {
+    throw new Error('다시 추첨하려면 배정된 자리를 2개 이상 골라 주세요.');
+  }
+
+  const shuffledStudentIds = shuffle(targets.map((a) => a.studentId));
+  const newStudentBySeat = new Map(targets.map((a, i) => [a.seatId, shuffledStudentIds[i]]));
+
+  return {
+    ...session,
+    id: `draw-${Date.now()}`,
+    assignments: session.assignments.map((a) => ({
+      seatId: a.seatId,
+      studentId: newStudentBySeat.get(a.seatId) ?? a.studentId,
+    })),
+    createdAt: new Date().toISOString(),
+  };
+};
+
+/**
+ * 결석 처리: 고른 좌석의 학생을 결과에서 빼고 좌석을 비웁니다.
+ */
+export const removeSeats = (session: DrawSession, seatIds: string[]): DrawSession => {
+  const targetSet = new Set(seatIds);
+  const removedStudentIds = new Set(
+    session.assignments.filter((a) => targetSet.has(a.seatId)).map((a) => a.studentId)
+  );
+
+  return {
+    ...session,
+    students: session.students.filter((s) => !removedStudentIds.has(s.id)),
+    selectedSeatIds: session.selectedSeatIds.filter((id) => !targetSet.has(id)),
+    assignments: session.assignments.filter((a) => !targetSet.has(a.seatId)),
+  };
+};
