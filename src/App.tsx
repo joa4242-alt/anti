@@ -657,7 +657,7 @@ function App() {
       )}
 
       <footer className="app-footer">
-        <p>체험학습 버스자리 PWA - Phase 9</p>
+        <p>체험학습 버스자리 · 학생 정보는 이 기기에만 저장돼요</p>
       </footer>
     </div>
   );
