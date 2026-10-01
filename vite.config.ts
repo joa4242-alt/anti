@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages는 https://joa4242-alt.github.io/anti/ 아래에서 열리므로 배포할 때만 경로를 바꾼다
+  base: process.env.BASE_PATH ?? '/',
   plugins: [
     react(),
     // PWA: 홈 화면 설치 + 오프라인 동작 (PRD 2장, 13장, 16장)
